@@ -3,7 +3,9 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
-const DB_PATH = path.join(__dirname, 'zidioconnect.db');
+const DB_PATH = process.env.NETLIFY
+  ? '/tmp/zidioconnect.db'
+  : path.join(__dirname, 'zidioconnect.db');
 
 let db = null;
 

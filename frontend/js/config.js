@@ -1,10 +1,9 @@
 // API Configuration
-// Change this URL to your deployed backend URL
 // Local: http://localhost:5000/api
-// Production: https://your-app-name.onrender.com/api
+// Netlify Backend: https://your-backend-site.netlify.app/api
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:5000/api'
-  : 'https://zidioconnect-backend.onrender.com/api';  // ← Change this after deploying backend
+  : 'https://zidioconnect-api.netlify.app/api';  // ← Change this to your Netlify backend URL
 
 const API = {
   auth: {
