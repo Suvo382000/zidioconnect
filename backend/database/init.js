@@ -10,7 +10,10 @@ const DB_PATH = process.env.NETLIFY
 let db = null;
 
 async function initDatabase() {
-  const SQL = await initSqlJs();
+  const SQL = await initSqlJs({
+    // Use the JS-only version (no WASM file needed)
+    locateFile: file => `https://sql.js.org/dist/${file}`
+  });
 
   // Load existing database or create new one
   if (fs.existsSync(DB_PATH)) {
