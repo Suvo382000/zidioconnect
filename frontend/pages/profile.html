@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - ZIDIOConnect</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html" class="nav-logo"><span class="logo-icon">Z</span><span class="logo-text">IDIO<span class="logo-highlight">Connect</span></span></a>
+      <div class="nav-actions">
+        <div class="nav-user" id="nav-user">
+          <div class="user-dropdown" id="user-dropdown">
+            <div class="user-avatar" id="user-avatar"><i class="fas fa-user"></i></div>
+            <div class="dropdown-menu" id="dropdown-menu">
+              <a href="dashboard.html" class="dropdown-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+              <div class="dropdown-divider"></div>
+              <a href="#" class="dropdown-item" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main style="padding-top:100px;min-height:100vh;background:var(--bg-secondary)">
+    <div class="container" style="max-width:700px">
+      <h2 style="margin-bottom:24px" class="animate-fade-up">My Profile</h2>
+      <div id="profile-content" class="animate-fade-up">
+        <div style="text-align:center;padding:40px"><i class="fas fa-spinner fa-spin" style="font-size:24px;color:var(--primary)"></i></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    if (!Auth.isLoggedIn()) window.location.href = 'login.html';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch(API.auth.me, { headers: Auth.getHeaders() });
+        const data = await res.json();
+        const u = data.user;
+        const p = data.profile || {};
+        const content = document.getElementById('profile-content');
+
+        content.innerHTML = `
+          <div style="background:white;padding:32px;border-radius:var(--radius-lg);border:1px solid var(--border);text-align:center;margin-bottom:24px">
+            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px;color:white;font-weight:700">${u.name.charAt(0)}</div>
+            <h2>${u.name}</h2>
+            <p style="color:var(--text-secondary)">${u.email}</p>
+            <span class="status-badge status-${u.role === 'student' ? 'shortlisted' : 'accepted'}" style="margin-top:8px">${u.role}</span>
+          </div>
+          <div style="background:white;padding:32px;border-radius:var(--radius-lg);border:1px solid var(--border)">
+            <h3 style="margin-bottom:16px">Details</h3>
+            ${u.role === 'student' ? `
+              <p><strong>Headline:</strong> ${p.headline || 'Not set'}</p>
+              <p><strong>Skills:</strong> ${p.skills || 'Not set'}</p>
+              <p><strong>Education:</strong> ${p.education || 'Not set'}</p>
+              <p><strong>Location:</strong> ${p.location || 'Not set'}</p>
+              <p><strong>LinkedIn:</strong> ${p.linkedin ? `<a href="${p.linkedin}" target="_blank">${p.linkedin}</a>` : 'Not set'}</p>
+              <p><strong>GitHub:</strong> ${p.github ? `<a href="${p.github}" target="_blank">${p.github}</a>` : 'Not set'}</p>
+            ` : u.role === 'recruiter' ? `
+              <p><strong>Company:</strong> ${p.company_name || 'Not set'}</p>
+              <p><strong>Industry:</strong> ${p.industry || 'Not set'}</p>
+              <p><strong>Size:</strong> ${p.company_size || 'Not set'}</p>
+              <p><strong>Website:</strong> ${p.company_website ? `<a href="${p.company_website}" target="_blank">${p.company_website}</a>` : 'Not set'}</p>
+              <p><strong>Location:</strong> ${p.location || 'Not set'}</p>
+            ` : ''}
+            <a href="dashboard.html" class="btn btn-primary" style="margin-top:20px"><i class="fas fa-edit"></i> Edit Profile</a>
+          </div>`;
+      } catch (err) {
+        document.getElementById('profile-content').innerHTML = '<p>Failed to load profile.</p>';
+      }
+    });
+  </script>
+</body>
+</html>

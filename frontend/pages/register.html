@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - ZIDIOConnect</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-container animate-fade-up">
+      <div class="auth-header">
+        <a href="../index.html" class="nav-logo" style="justify-content:center;margin-bottom:20px">
+          <span class="logo-icon">Z</span>
+          <span class="logo-text">IDIO<span class="logo-highlight">Connect</span></span>
+        </a>
+        <h1>Create Account</h1>
+        <p>Join ZIDIOConnect today</p>
+      </div>
+      <form id="register-form">
+        <div class="role-selector">
+          <div class="role-option active" data-role="student">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Student</span>
+          </div>
+          <div class="role-option" data-role="recruiter">
+            <i class="fas fa-building"></i>
+            <span>Recruiter</span>
+          </div>
+        </div>
+        <input type="hidden" id="role" value="student">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" class="form-control" placeholder="Enter your full name" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" class="form-control" placeholder="Enter phone number">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Create a password (min 6 chars)" required minlength="6">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+          <i class="fas fa-user-plus"></i> Create Account
+        </button>
+      </form>
+      <div class="auth-footer">
+        <p>Already have an account? <a href="login.html">Login</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    // Role selector
+    document.querySelectorAll('.role-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.role-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        document.getElementById('role').value = opt.dataset.role;
+      });
+    });
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+      const body = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        password: document.getElementById('password').value,
+        role: document.getElementById('role').value
+      };
+
+      try {
+        const res = await fetch(API.auth.register, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          Auth.setAuth(data.token, data.user);
+          showToast('Account created successfully!', 'success');
+          setTimeout(() => window.location.href = 'dashboard.html', 500);
+        } else {
+          showToast(data.message || 'Registration failed', 'error');
+        }
+      } catch (err) {
+        showToast('Cannot connect to server', 'error');
+      }
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+    });
+  </script>
+</body>
+</html>

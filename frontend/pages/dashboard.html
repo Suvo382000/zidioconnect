@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - ZIDIOConnect</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html" class="nav-logo"><span class="logo-icon">Z</span><span class="logo-text">IDIO<span class="logo-highlight">Connect</span></span></a>
+      <div class="nav-menu" id="nav-menu">
+        <a href="../index.html" class="nav-link">Home</a>
+        <a href="jobs.html" class="nav-link">Jobs</a>
+        <a href="internships.html" class="nav-link">Internships</a>
+      </div>
+      <div class="nav-actions">
+        <div class="nav-user" id="nav-user">
+          <div class="notification-bell" id="notification-bell"><i class="fas fa-bell"></i><span class="notification-badge hidden" id="notification-badge">0</span></div>
+          <div class="user-dropdown" id="user-dropdown">
+            <div class="user-avatar" id="user-avatar"><i class="fas fa-user"></i></div>
+            <div class="dropdown-menu" id="dropdown-menu">
+              <a href="profile.html" class="dropdown-item"><i class="fas fa-user-edit"></i> Profile</a>
+              <div class="dropdown-divider"></div>
+              <a href="#" class="dropdown-item" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+          </div>
+        </div>
+        <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="dashboard-main" id="dashboard-content"></main>
+  </div>
+
+  <!-- Post Job Modal -->
+  <div class="modal-overlay" id="post-job-modal">
+    <div class="modal">
+      <div class="modal-header"><h2>Post New Job/Internship</h2><div class="modal-close" onclick="document.getElementById('post-job-modal').classList.remove('show')"><i class="fas fa-times"></i></div></div>
+      <form id="post-job-form">
+        <div class="form-group"><label>Title *</label><input type="text" id="job-title" class="form-control" required></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group"><label>Type *</label><select id="job-type" class="form-control" required><option value="job">Job</option><option value="internship">Internship</option></select></div>
+          <div class="form-group"><label>Work Mode</label><select id="job-mode" class="form-control"><option value="remote">Remote</option><option value="onsite">Onsite</option><option value="hybrid">Hybrid</option></select></div>
+        </div>
+        <div class="form-group"><label>Description *</label><textarea id="job-desc" class="form-control" rows="4" required></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group"><label>Location</label><input type="text" id="job-location" class="form-control" placeholder="e.g. Bangalore"></div>
+          <div class="form-group"><label>Experience Level</label><select id="job-exp" class="form-control"><option value="fresher">Fresher</option><option value="junior">Junior</option><option value="mid">Mid-Level</option><option value="senior">Senior</option></select></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group"><label>Min Salary (₹)</label><input type="number" id="job-salary-min" class="form-control"></div>
+          <div class="form-group"><label>Max Salary (₹)</label><input type="number" id="job-salary-max" class="form-control"></div>
+        </div>
+        <div class="form-group"><label>Skills Required</label><input type="text" id="job-skills" class="form-control" placeholder="e.g. JavaScript, React, Node.js"></div>
+        <div class="form-group"><label>Deadline</label><input type="date" id="job-deadline" class="form-control"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center"><i class="fas fa-paper-plane"></i> Post Job</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/app.js"></script>
+
+  <script>
+    if (!Auth.isLoggedIn()) { window.location.href = 'login.html'; }
+    const user = Auth.getUser();
+    let currentSection = 'overview';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSidebar();
+      loadSection('overview');
+    });
+
+    function renderSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      let items = '';
+      if (user.role === 'student') {
+        items = `
+          <a class="sidebar-item active" data-section="overview"><i class="fas fa-tachometer-alt"></i> Overview</a>
+          <a class="sidebar-item" data-section="applications"><i class="fas fa-file-alt"></i> My Applications</a>
+          <a class="sidebar-item" data-section="bookmarks"><i class="fas fa-bookmark"></i> Bookmarks</a>
+          <a class="sidebar-item" data-section="notifications"><i class="fas fa-bell"></i> Notifications</a>
+          <a class="sidebar-item" data-section="profile"><i class="fas fa-user-edit"></i> Profile</a>
+        `;
+      } else if (user.role === 'recruiter') {
+        items = `
+          <a class="sidebar-item active" data-section="overview"><i class="fas fa-tachometer-alt"></i> Overview</a>
+          <a class="sidebar-item" data-section="my-jobs"><i class="fas fa-briefcase"></i> My Jobs</a>
+          <a class="sidebar-item" data-section="post-job"><i class="fas fa-plus-circle"></i> Post Job</a>
+          <a class="sidebar-item" data-section="notifications"><i class="fas fa-bell"></i> Notifications</a>
+          <a class="sidebar-item" data-section="profile"><i class="fas fa-user-edit"></i> Profile</a>
+        `;
+      } else if (user.role === 'admin') {
+        items = `
+          <a class="sidebar-item active" data-section="overview"><i class="fas fa-tachometer-alt"></i> Analytics</a>
+          <a class="sidebar-item" data-section="manage-users"><i class="fas fa-users"></i> Manage Users</a>
+          <a class="sidebar-item" data-section="manage-jobs"><i class="fas fa-briefcase"></i> Manage Jobs</a>
+          <a class="sidebar-item" data-section="notifications"><i class="fas fa-bell"></i> Notifications</a>
+        `;
+      }
+      sidebar.innerHTML = `<div class="sidebar-menu">${items}</div>`;
+      sidebar.querySelectorAll('.sidebar-item').forEach(item => {
+        item.addEventListener('click', () => {
+          sidebar.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          loadSection(item.dataset.section);
+        });
+      });
+    }
+
+    async function loadSection(section) {
+      currentSection = section;
+      const main = document.getElementById('dashboard-content');
+      main.innerHTML = '<div style="text-align:center;padding:40px"><i class="fas fa-spinner fa-spin" style="font-size:24px;color:var(--primary)"></i></div>';
+
+      if (section === 'overview') await loadOverview(main);
+      else if (section === 'applications') await loadApplications(main);
+      else if (section === 'bookmarks') await loadBookmarks(main);
+      else if (section === 'my-jobs') await loadMyJobs(main);
+      else if (section === 'post-job') openPostJobModal();
+      else if (section === 'notifications') await loadNotifications(main);
+      else if (section === 'profile') loadProfileForm(main);
+      else if (section === 'manage-users') await loadManageUsers(main);
+      else if (section === 'manage-jobs') await loadManageJobs(main);
+    }
+
+    // ===== OVERVIEW =====
+    async function loadOverview(main) {
+      if (user.role === 'admin') {
+        try {
+          const res = await fetch(API.admin.analytics, { headers: Auth.getHeaders() });
+          const data = await res.json();
+          main.innerHTML = `
+            <h2 style="margin-bottom:24px">Admin Dashboard</h2>
+            <div class="stats-grid">
+              <div class="stat-card"><div class="stat-card-icon" style="background:rgba(108,99,255,0.1);color:var(--primary)"><i class="fas fa-users"></i></div><h3>${data.stats.totalUsers}</h3><p>Total Users</p></div>
+              <div class="stat-card"><div class="stat-card-icon" style="background:rgba(0,212,170,0.1);color:var(--secondary)"><i class="fas fa-graduation-cap"></i></div><h3>${data.stats.totalStudents}</h3><p>Students</p></div>
+              <div class="stat-card"><div class="stat-card-icon" style="background:rgba(255,107,107,0.1);color:var(--accent)"><i class="fas fa-building"></i></div><h3>${data.stats.totalRecruiters}</h3><p>Recruiters</p></div>
+              <div class="stat-card"><div class="stat-card-icon" style="background:rgba(251,191,36,0.1);color:#d97706"><i class="fas fa-briefcase"></i></div><h3>${data.stats.activeJobs}</h3><p>Active Jobs</p></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+              <div style="background:white;border-radius:var(--radius);padding:24px;border:1px solid var(--border)">
+                <h3 style="margin-bottom:16px">Recent Users</h3>
+                ${data.recentUsers.map(u => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span>${u.name}</span><span class="status-badge status-${u.role === 'student' ? 'shortlisted' : 'accepted'}">${u.role}</span></div>`).join('')}
+              </div>
+              <div style="background:white;border-radius:var(--radius);padding:24px;border:1px solid var(--border)">
+                <h3 style="margin-bottom:16px">Recent Jobs</h3>
+                ${data.recentJobs.map(j => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span>${j.title}</span><small style="color:var(--text-secondary)">${j.company_name || ''}</small></div>`).join('')}
+              </div>
+            </div>`;
+        } catch (err) { main.innerHTML = '<p>Failed to load analytics.</p>'; }
+      } else if (user.role === 'student') {
+        try {
+          const res = await fetch(API.applications.myApplications, { headers: Auth.getHeaders() });
+          const apps = await res.json();
+          const pending = apps.filter(a => a.status === 'pending').length;
+          const shortlisted = apps.filter(a => a.status === 'shortlisted').length;
+          main.innerHTML = `
+            <h2 style="margin-bottom:24px">Welcome, ${user.name}!</h2>
+            <div class="stats-grid">
+              <div class="stat-card"><div class="stat-card-icon" style="background:rgba(108,99,255,0.1);color:var(--primary)"><i class="fas fa-file-alt"></i></div><h3>${apps.length}</h3><p>Total Applications</p></div>
+              <div class="stat-card"><div class="stat-card-icon" style="background:rgba(251,191,36,0.1);color:#d97706"><i class="fas fa-clock"></i></div><h3>${pending}</h3><p>Pending</p></div>
+              <div class="stat-card"><div class="stat-card-icon" style="background:rgba(0,212,170,0.1);color:var(--secondary)"><i class="fas fa-check-circle"></i></div><h3>${shortlisted}</h3><p>Shortlisted</p></div>
+            </div>
+            <div style="background:white;border-radius:var(--radius);padding:24px;border:1px solid var(--border)">
+              <h3 style="margin-bottom:16px">Recent Applications</h3>
+              ${apps.length > 0 ? `<table class="data-table"><thead><tr><th>Job</th><th>Company</th><th>Status</th><th>Date</th></tr></thead><tbody>${apps.slice(0,5).map(a => `<tr><td>${a.job_title}</td><td>${a.company_name || 'N/A'}</td><td><span class="status-badge status-${a.status}">${a.status}</span></td><td>${new Date(a.applied_at).toLocaleDateString()}</td></tr>`).join('')}</tbody></table>` : '<p style="color:var(--text-secondary)">No applications yet. <a href="jobs.html" style="color:var(--primary)">Browse jobs</a></p>'}
+            </div>`;
+        } catch (err) { main.innerHTML = '<p>Failed to load data.</p>'; }
+      } else if (user.role === 'recruiter') {
+        try {
+          const res = await fetch(API.jobs.myJobs, { headers: Auth.getHeaders() });
+          const jobs = await res.json();
+          const totalApps = jobs.reduce((sum, j) => sum + (j.application_count || 0), 0);
+          main.innerHTML = `
+            <h2 style="margin-bottom:24px">Welcome, ${user.name}!</h2>
+            <div class="stats-grid">
+              <div class="stat-card"><div class="stat-card-icon" style="background:rgba(108,99,255,0.1);color:var(--primary)"><i class="fas fa-briefcase"></i></div><h3>${jobs.length}</h3><p>Posted Jobs</p></div>
+              <div class="stat-card"><div class="stat-card-icon" style="background:rgba(0,212,170,0.1);color:var(--secondary)"><i class="fas fa-users"></i></div><h3>${totalApps}</h3><p>Total Applications</p></div>
+              <div class="stat-card"><div class="stat-card-icon" style="background:rgba(251,191,36,0.1);color:#d97706"><i class="fas fa-check"></i></div><h3>${jobs.filter(j => j.is_active).length}</h3><p>Active Listings</p></div>
+            </div>
+            <button class="btn btn-primary" onclick="openPostJobModal()" style="margin-bottom:20px"><i class="fas fa-plus"></i> Post New Job</button>`;
+        } catch (err) { main.innerHTML = '<p>Failed to load data.</p>'; }
+      }
+    }
+
+    // ===== STUDENT APPLICATIONS =====
+    async function loadApplications(main) {
+      try {
+        const res = await fetch(API.applications.myApplications, { headers: Auth.getHeaders() });
+        const apps = await res.json();
+        main.innerHTML = `<h2 style="margin-bottom:24px">My Applications</h2>`;
+        if (apps.length === 0) {
+          main.innerHTML += '<div style="text-align:center;padding:60px;background:white;border-radius:var(--radius)"><i class="fas fa-file-alt" style="font-size:48px;color:var(--text-light);margin-bottom:16px"></i><p>No applications yet.</p><a href="jobs.html" class="btn btn-primary" style="margin-top:16px">Browse Jobs</a></div>';
+          return;
+        }
+        main.innerHTML += `<div style="background:white;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)"><table class="data-table"><thead><tr><th>Job Title</th><th>Company</th><th>Type</th><th>Status</th><th>Applied</th></tr></thead><tbody>${apps.map(a => `<tr><td><strong>${a.job_title}</strong></td><td>${a.company_name || 'N/A'}</td><td><span class="job-type-badge ${a.job_type === 'internship' ? 'badge-internship' : 'badge-job'}">${a.job_type}</span></td><td><span class="status-badge status-${a.status}">${a.status}</span></td><td>${new Date(a.applied_at).toLocaleDateString()}</td></tr>`).join('')}</tbody></table></div>`;
+      } catch (err) { main.innerHTML = '<p>Failed to load applications.</p>'; }
+    }
+
+    // ===== BOOKMARKS =====
+    async function loadBookmarks(main) {
+      try {
+        const res = await fetch(API.bookmarks.list, { headers: Auth.getHeaders() });
+        const bookmarks = await res.json();
+        main.innerHTML = `<h2 style="margin-bottom:24px">Saved Jobs</h2>`;
+        if (bookmarks.length === 0) {
+          main.innerHTML += '<div style="text-align:center;padding:60px;background:white;border-radius:var(--radius)"><i class="fas fa-bookmark" style="font-size:48px;color:var(--text-light);margin-bottom:16px"></i><p>No bookmarks yet.</p></div>';
+          return;
+        }
+        main.innerHTML += `<div class="jobs-grid">${bookmarks.map(b => createJobCard({...b, type: b.type, skills_required: ''})).join('')}</div>`;
+      } catch (err) { main.innerHTML = '<p>Failed to load bookmarks.</p>'; }
+    }
+
+    // ===== RECRUITER: MY JOBS =====
+    async function loadMyJobs(main) {
+      try {
+        const res = await fetch(API.jobs.myJobs, { headers: Auth.getHeaders() });
+        const jobs = await res.json();
+        main.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><h2>My Job Listings</h2><button class="btn btn-primary" onclick="openPostJobModal()"><i class="fas fa-plus"></i> Post New</button></div>`;
+        if (jobs.length === 0) {
+          main.innerHTML += '<div style="text-align:center;padding:60px;background:white;border-radius:var(--radius)"><p>No jobs posted yet.</p></div>';
+          return;
+        }
+        main.innerHTML += `<div style="background:white;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)"><table class="data-table"><thead><tr><th>Title</th><th>Type</th><th>Applications</th><th>Status</th><th>Actions</th></tr></thead><tbody>${jobs.map(j => `<tr><td><strong>${j.title}</strong></td><td>${j.type}</td><td><span style="color:var(--primary);font-weight:600">${j.application_count || 0}</span></td><td><span class="status-badge ${j.is_active ? 'status-accepted' : 'status-rejected'}">${j.is_active ? 'Active' : 'Closed'}</span></td><td><button class="btn btn-sm btn-outline" onclick="viewApplications(${j.id})"><i class="fas fa-eye"></i> View</button></td></tr>`).join('')}</tbody></table></div>`;
+      } catch (err) { main.innerHTML = '<p>Failed to load jobs.</p>'; }
+    }
+
+    // View applications for a job
+    async function viewApplications(jobId) {
+      const main = document.getElementById('dashboard-content');
+      try {
+        const res = await fetch(API.applications.forJob(jobId), { headers: Auth.getHeaders() });
+        const apps = await res.json();
+        main.innerHTML = `<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px"><button class="btn btn-outline btn-sm" onclick="loadSection('my-jobs')"><i class="fas fa-arrow-left"></i></button><h2>Applications</h2></div>`;
+        if (apps.length === 0) {
+          main.innerHTML += '<div style="text-align:center;padding:60px;background:white;border-radius:var(--radius)"><p>No applications received yet.</p></div>';
+          return;
+        }
+        main.innerHTML += `<div style="background:white;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)"><table class="data-table"><thead><tr><th>Student</th><th>Email</th><th>Skills</th><th>Resume</th><th>Status</th><th>Actions</th></tr></thead><tbody>${apps.map(a => {
+          const resumePath = a.resume_path || a.profile_resume;
+          const resumeUrl = resumePath ? `${API_BASE_URL.replace('/api','')}${resumePath}` : null;
+          const resumeCell = resumeUrl
+            ? `<a href="${resumeUrl}" target="_blank" class="btn btn-sm btn-outline" style="white-space:nowrap"><i class="fas fa-file-pdf"></i> View</a>`
+            : `<span style="color:var(--text-light);font-size:13px">No resume</span>`;
+          return `<tr><td><strong>${a.student_name}</strong><br><small>${a.headline || ''}</small></td><td>${a.student_email}</td><td>${a.skills ? a.skills.split(',').slice(0,3).join(', ') : 'N/A'}</td><td>${resumeCell}</td><td><span class="status-badge status-${a.status}">${a.status}</span></td><td><select onchange="updateAppStatus(${a.id}, this.value)" style="padding:6px;border-radius:6px;border:1px solid var(--border)"><option value="pending" ${a.status==='pending'?'selected':''}>Pending</option><option value="shortlisted" ${a.status==='shortlisted'?'selected':''}>Shortlist</option><option value="accepted" ${a.status==='accepted'?'selected':''}>Accept</option><option value="rejected" ${a.status==='rejected'?'selected':''}>Reject</option></select></td></tr>`;
+        }).join('')}</tbody></table></div>`;
+      } catch (err) { main.innerHTML = '<p>Failed to load applications.</p>'; }
+    }
+
+    async function updateAppStatus(appId, status) {
+      try {
+        const res = await fetch(API.applications.updateStatus(appId), {
+          method: 'PUT', headers: Auth.getHeaders(), body: JSON.stringify({ status })
+        });
+        if (res.ok) showToast(`Application ${status}`, 'success');
+        else showToast('Failed to update', 'error');
+      } catch (err) { showToast('Error updating status', 'error'); }
+    }
+
+    // ===== POST JOB =====
+    function openPostJobModal() {
+      document.getElementById('post-job-modal').classList.add('show');
+    }
+
+    document.getElementById('post-job-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = {
+        title: document.getElementById('job-title').value,
+        type: document.getElementById('job-type').value,
+        description: document.getElementById('job-desc').value,
+        location: document.getElementById('job-location').value,
+        work_mode: document.getElementById('job-mode').value,
+        experience_level: document.getElementById('job-exp').value,
+        salary_min: parseInt(document.getElementById('job-salary-min').value) || null,
+        salary_max: parseInt(document.getElementById('job-salary-max').value) || null,
+        skills_required: document.getElementById('job-skills').value,
+        deadline: document.getElementById('job-deadline').value || null
+      };
+      try {
+        const res = await fetch(API.jobs.create, { method: 'POST', headers: Auth.getHeaders(), body: JSON.stringify(body) });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Job posted successfully!', 'success');
+          document.getElementById('post-job-modal').classList.remove('show');
+          document.getElementById('post-job-form').reset();
+          loadSection('my-jobs');
+        } else { showToast(data.message, 'error'); }
+      } catch (err) { showToast('Failed to post job', 'error'); }
+    });
+
+    // ===== NOTIFICATIONS =====
+    async function loadNotifications(main) {
+      try {
+        const res = await fetch(API.notifications.list, { headers: Auth.getHeaders() });
+        const data = await res.json();
+        main.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><h2>Notifications</h2><button class="btn btn-outline btn-sm" onclick="markAllRead()">Mark All Read</button></div>`;
+        if (data.notifications.length === 0) {
+          main.innerHTML += '<div style="text-align:center;padding:60px;background:white;border-radius:var(--radius)"><i class="fas fa-bell-slash" style="font-size:48px;color:var(--text-light);margin-bottom:16px"></i><p>No notifications.</p></div>';
+          return;
+        }
+        main.innerHTML += `<div style="display:flex;flex-direction:column;gap:12px">${data.notifications.map(n => `
+          <div style="background:white;padding:16px 20px;border-radius:var(--radius);border:1px solid var(--border);border-left:4px solid ${n.is_read ? 'var(--border)' : 'var(--primary)'};display:flex;justify-content:space-between;align-items:center">
+            <div><strong>${n.title}</strong><p style="color:var(--text-secondary);font-size:14px;margin-top:4px">${n.message}</p></div>
+            <small style="color:var(--text-light);white-space:nowrap">${new Date(n.created_at).toLocaleDateString()}</small>
+          </div>`).join('')}</div>`;
+      } catch (err) { main.innerHTML = '<p>Failed to load notifications.</p>'; }
+    }
+
+    async function markAllRead() {
+      try {
+        await fetch(API.notifications.readAll, { method: 'PUT', headers: Auth.getHeaders() });
+        showToast('All marked as read', 'success');
+        const badge = document.getElementById('notification-badge');
+        if (badge) { badge.classList.add('hidden'); badge.textContent = '0'; }
+        loadSection('notifications');
+      } catch (err) {}
+    }
+
+    // ===== PROFILE =====
+    async function loadProfileForm(main) {
+      try {
+        const res = await fetch(API.auth.me, { headers: Auth.getHeaders() });
+        const data = await res.json();
+        const u = data.user;
+        const p = data.profile || {};
+        if (user.role === 'student') {
+          main.innerHTML = `<h2 style="margin-bottom:24px">Edit Profile</h2>
+            <div style="background:white;padding:32px;border-radius:var(--radius);border:1px solid var(--border)">
+            <form id="profile-form">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div class="form-group"><label>Name</label><input type="text" class="form-control" id="p-name" value="${u.name || ''}"></div>
+                <div class="form-group"><label>Phone</label><input type="text" class="form-control" id="p-phone" value="${u.phone || ''}"></div>
+              </div>
+              <div class="form-group"><label>Headline</label><input type="text" class="form-control" id="p-headline" value="${p.headline || ''}" placeholder="e.g. Computer Science Student"></div>
+              <div class="form-group"><label>Bio</label><textarea class="form-control" id="p-bio" rows="3">${p.bio || ''}</textarea></div>
+              <div class="form-group"><label>Skills (comma separated)</label><input type="text" class="form-control" id="p-skills" value="${p.skills || ''}" placeholder="JavaScript, Python, React"></div>
+              <div class="form-group"><label>Education</label><input type="text" class="form-control" id="p-education" value="${p.education || ''}"></div>
+              <div class="form-group"><label>Location</label><input type="text" class="form-control" id="p-location" value="${p.location || ''}"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div class="form-group"><label>LinkedIn</label><input type="url" class="form-control" id="p-linkedin" value="${p.linkedin || ''}"></div>
+                <div class="form-group"><label>GitHub</label><input type="url" class="form-control" id="p-github" value="${p.github || ''}"></div>
+              </div>
+              <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Profile</button>
+            </form></div>
+
+            <!-- Resume Upload Section -->
+            <div style="background:white;padding:32px;border-radius:var(--radius);border:1px solid var(--border);margin-top:24px">
+              <h3 style="margin-bottom:16px"><i class="fas fa-file-upload" style="color:var(--primary);margin-right:8px"></i>Resume / CV Upload</h3>
+              <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px">Upload your resume (PDF, DOC, DOCX — max 5MB)</p>
+              ${p.resume_path ? `<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg-secondary);border-radius:8px;margin-bottom:16px"><i class="fas fa-file-pdf" style="font-size:24px;color:var(--accent)"></i><div><strong>Current Resume</strong><br><a href="${API_BASE_URL.replace('/api','')}${p.resume_path}" target="_blank" style="color:var(--primary);font-size:13px">View uploaded file</a></div></div>` : '<p style="color:var(--text-light);font-size:13px;margin-bottom:16px"><i class="fas fa-info-circle"></i> No resume uploaded yet.</p>'}
+              <div style="border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;transition:all 0.3s" id="resume-drop-zone">
+                <i class="fas fa-cloud-upload-alt" style="font-size:36px;color:var(--primary);margin-bottom:12px"></i>
+                <p style="font-weight:600;margin-bottom:8px">Drag & drop your resume here</p>
+                <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px">or click to browse files</p>
+                <input type="file" id="resume-input" accept=".pdf,.doc,.docx" style="display:none">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('resume-input').click()"><i class="fas fa-folder-open"></i> Choose File</button>
+              </div>
+              <div id="resume-file-info" style="display:none;margin-top:12px;padding:12px;background:var(--bg-secondary);border-radius:8px;display:flex;align-items:center;gap:12px"></div>
+              <button type="button" class="btn btn-primary" id="upload-resume-btn" style="margin-top:16px;display:none"><i class="fas fa-upload"></i> Upload Resume</button>
+            </div>`;
+          document.getElementById('profile-form').addEventListener('submit', saveStudentProfile);
+          initResumeUpload();
+        } else if (user.role === 'recruiter') {
+          main.innerHTML = `<h2 style="margin-bottom:24px">Company Profile</h2>
+            <div style="background:white;padding:32px;border-radius:var(--radius);border:1px solid var(--border)">
+            <form id="profile-form">
+              <div class="form-group"><label>Your Name</label><input type="text" class="form-control" id="p-name" value="${u.name || ''}"></div>
+              <div class="form-group"><label>Company Name</label><input type="text" class="form-control" id="p-company" value="${p.company_name || ''}"></div>
+              <div class="form-group"><label>Company Description</label><textarea class="form-control" id="p-desc" rows="3">${p.company_description || ''}</textarea></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div class="form-group"><label>Industry</label><input type="text" class="form-control" id="p-industry" value="${p.industry || ''}"></div>
+                <div class="form-group"><label>Company Size</label><input type="text" class="form-control" id="p-size" value="${p.company_size || ''}" placeholder="e.g. 50-200"></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div class="form-group"><label>Website</label><input type="url" class="form-control" id="p-website" value="${p.company_website || ''}"></div>
+                <div class="form-group"><label>Location</label><input type="text" class="form-control" id="p-location" value="${p.location || ''}"></div>
+              </div>
+              <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Profile</button>
+            </form></div>`;
+          document.getElementById('profile-form').addEventListener('submit', saveRecruiterProfile);
+        }
+      } catch (err) { main.innerHTML = '<p>Failed to load profile.</p>'; }
+    }
+
+    async function saveStudentProfile(e) {
+      e.preventDefault();
+      const body = {
+        name: document.getElementById('p-name').value,
+        phone: document.getElementById('p-phone').value,
+        headline: document.getElementById('p-headline').value,
+        bio: document.getElementById('p-bio').value,
+        skills: document.getElementById('p-skills').value,
+        education: document.getElementById('p-education').value,
+        location: document.getElementById('p-location').value,
+        linkedin: document.getElementById('p-linkedin').value,
+        github: document.getElementById('p-github').value,
+      };
+      try {
+        const res = await fetch(API.profile.student, { method: 'PUT', headers: Auth.getHeaders(), body: JSON.stringify(body) });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Profile saved!', 'success');
+          setTimeout(() => loadSection('profile'), 1000);
+        } else {
+          showToast(data.message || 'Failed to save', 'error');
+        }
+      } catch (err) {
+        console.error('Save student profile error:', err);
+        showToast('Error saving profile. Is backend running?', 'error');
+      }
+    }
+
+    // ===== RESUME UPLOAD =====
+    function initResumeUpload() {
+      const dropZone = document.getElementById('resume-drop-zone');
+      const fileInput = document.getElementById('resume-input');
+      const uploadBtn = document.getElementById('upload-resume-btn');
+      const fileInfo = document.getElementById('resume-file-info');
+      let selectedFile = null;
+
+      // Drag & Drop
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--primary)';
+        dropZone.style.background = 'rgba(108,99,255,0.05)';
+      });
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = 'var(--border)';
+        dropZone.style.background = 'transparent';
+      });
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--border)';
+        dropZone.style.background = 'transparent';
+        const file = e.dataTransfer.files[0];
+        if (file) handleFileSelect(file);
+      });
+
+      // File input change
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files[0]) handleFileSelect(e.target.files[0]);
+      });
+
+      function handleFileSelect(file) {
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['pdf', 'doc', 'docx'].includes(ext)) {
+          showToast('Only PDF, DOC, DOCX files are allowed', 'error');
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          showToast('File size must be under 5MB', 'error');
+          return;
+        }
+        selectedFile = file;
+        const sizeKB = (file.size / 1024).toFixed(1);
+        const icon = ext === 'pdf' ? 'fa-file-pdf' : 'fa-file-word';
+        const color = ext === 'pdf' ? 'var(--accent)' : 'var(--primary)';
+        fileInfo.style.display = 'flex';
+        fileInfo.innerHTML = `<i class="fas ${icon}" style="font-size:24px;color:${color}"></i><div><strong>${file.name}</strong><br><small style="color:var(--text-secondary)">${sizeKB} KB</small></div><i class="fas fa-check-circle" style="color:var(--secondary);margin-left:auto"></i>`;
+        uploadBtn.style.display = 'inline-flex';
+      }
+
+      // Upload button
+      uploadBtn.addEventListener('click', async () => {
+        if (!selectedFile) return;
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+        const formData = new FormData();
+        formData.append('resume', selectedFile);
+
+        try {
+          const res = await fetch(API.profile.resume, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + Auth.getToken() },
+            body: formData
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast('Resume uploaded successfully!', 'success');
+            uploadBtn.innerHTML = '<i class="fas fa-check"></i> Uploaded!';
+            uploadBtn.classList.remove('btn-primary');
+            uploadBtn.classList.add('btn-success');
+            setTimeout(() => loadSection('profile'), 1500);
+          } else {
+            showToast(data.message || 'Upload failed', 'error');
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Resume';
+          }
+        } catch (err) {
+          showToast('Upload failed. Check server connection.', 'error');
+          uploadBtn.disabled = false;
+          uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Resume';
+        }
+      });
+    }
+
+    async function saveRecruiterProfile(e) {
+      e.preventDefault();
+      const body = {
+        name: document.getElementById('p-name').value,
+        company_name: document.getElementById('p-company').value,
+        company_description: document.getElementById('p-desc').value,
+        industry: document.getElementById('p-industry').value,
+        company_size: document.getElementById('p-size').value,
+        company_website: document.getElementById('p-website').value,
+        location: document.getElementById('p-location').value,
+      };
+      try {
+        const res = await fetch(API.profile.recruiter, { method: 'PUT', headers: Auth.getHeaders(), body: JSON.stringify(body) });
+        const data = await res.json();
+        if (res.ok) showToast('Profile saved!', 'success');
+        else showToast(data.message || 'Failed to save', 'error');
+      } catch (err) {
+        console.error('Save profile error:', err);
+        showToast('Error saving profile. Is the backend running?', 'error');
+      }
+    }
+
+    // ===== ADMIN: MANAGE USERS =====
+    async function loadManageUsers(main) {
+      try {
+        const res = await fetch(API.admin.users, { headers: Auth.getHeaders() });
+        const data = await res.json();
+        main.innerHTML = `<h2 style="margin-bottom:24px">Manage Users</h2>
+          <div style="background:white;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)">
+          <table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>${data.users.map(u => `<tr>
+            <td><strong>${u.name}</strong></td><td>${u.email}</td>
+            <td><span class="status-badge status-${u.role === 'student' ? 'shortlisted' : u.role === 'recruiter' ? 'accepted' : 'pending'}">${u.role}</span></td>
+            <td><span class="status-badge ${u.is_active ? 'status-accepted' : 'status-rejected'}">${u.is_active ? 'Active' : 'Blocked'}</span></td>
+            <td>${u.role !== 'admin' ? `<button class="btn btn-sm ${u.is_active ? 'btn-danger' : 'btn-success'}" onclick="toggleUserStatus(${u.id})">${u.is_active ? 'Block' : 'Unblock'}</button>` : ''}</td>
+          </tr>`).join('')}</tbody></table></div>`;
+      } catch (err) { main.innerHTML = '<p>Failed to load users.</p>'; }
+    }
+
+    async function toggleUserStatus(userId) {
+      try {
+        const res = await fetch(API.admin.toggleUser(userId), { method: 'PUT', headers: Auth.getHeaders() });
+        const data = await res.json();
+        if (res.ok) { showToast(data.message, 'success'); loadSection('manage-users'); }
+        else showToast(data.message, 'error');
+      } catch (err) { showToast('Error', 'error'); }
+    }
+
+    // ===== ADMIN: MANAGE JOBS =====
+    async function loadManageJobs(main) {
+      try {
+        const res = await fetch(API.admin.jobs, { headers: Auth.getHeaders() });
+        const jobs = await res.json();
+        main.innerHTML = `<h2 style="margin-bottom:24px">Manage Jobs</h2>
+          <div style="background:white;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)">
+          <table class="data-table"><thead><tr><th>Title</th><th>Company</th><th>Type</th><th>Applications</th><th>Actions</th></tr></thead>
+          <tbody>${jobs.map(j => {
+            const jobType = j.job_type || j.type || 'N/A';
+            return `<tr>
+              <td><strong>${j.title}</strong></td><td>${j.company_name || j.recruiter_name}</td>
+              <td><span class="job-type-badge ${jobType === 'internship' ? 'badge-internship' : 'badge-job'}">${jobType}</span></td>
+              <td>${j.application_count || 0}</td>
+              <td><button class="btn btn-sm btn-danger" onclick="adminDeleteJob(${j.id})"><i class="fas fa-trash"></i></button></td>
+            </tr>`;
+          }).join('')}</tbody></table></div>`;
+      } catch (err) { 
+        console.error('Load manage jobs error:', err);
+        main.innerHTML = '<p>Failed to load jobs.</p>'; 
+      }
+    }
+
+    async function adminDeleteJob(jobId) {
+      if (!confirm('Are you sure you want to remove this job?')) return;
+      try {
+        const res = await fetch(API.admin.deleteJob(jobId), { method: 'DELETE', headers: Auth.getHeaders() });
+        if (res.ok) { showToast('Job removed', 'success'); loadSection('manage-jobs'); }
+        else showToast('Failed to delete', 'error');
+      } catch (err) { showToast('Error', 'error'); }
+    }
+  </script>
+</body>
+</html>

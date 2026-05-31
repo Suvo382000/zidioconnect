@@ -1,0 +1,137 @@
+/* ===== Keyframe Animations ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(108,99,255,0.2); }
+  50% { box-shadow: 0 0 20px rgba(108,99,255,0.4); }
+}
+
+/* ===== Scroll Animations ===== */
+.animate-fade-up {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition-delay: var(--delay, 0s);
+}
+.animate-fade-up.visible { opacity: 1; transform: translateY(0); }
+
+.animate-fade-down {
+  opacity: 0; transform: translateY(-30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition-delay: var(--delay, 0s);
+}
+.animate-fade-down.visible { opacity: 1; transform: translateY(0); }
+
+.animate-slide-left {
+  opacity: 0; transform: translateX(-50px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition-delay: var(--delay, 0s);
+}
+.animate-slide-left.visible { opacity: 1; transform: translateX(0); }
+
+.animate-slide-right {
+  opacity: 0; transform: translateX(50px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition-delay: var(--delay, 0s);
+}
+.animate-slide-right.visible { opacity: 1; transform: translateX(0); }
+
+.animate-scale {
+  opacity: 0; transform: scale(0.8);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition-delay: var(--delay, 0s);
+}
+.animate-scale.visible { opacity: 1; transform: scale(1); }
+
+/* ===== Hover Animations ===== */
+.hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.hover-lift:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+
+.hover-glow { transition: box-shadow 0.3s ease; }
+.hover-glow:hover { box-shadow: 0 0 30px rgba(108,99,255,0.3); }
+
+/* ===== Particle Animation ===== */
+.particle {
+  position: absolute; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  opacity: 0.1; animation: float 8s ease-in-out infinite;
+}
+
+/* ===== Button Ripple Effect ===== */
+.btn { position: relative; overflow: hidden; }
+.btn .ripple {
+  position: absolute; border-radius: 50%; background: rgba(255,255,255,0.4);
+  animation: ripple 0.6s linear; pointer-events: none;
+}
+
+/* ===== Card Tilt Effect ===== */
+.tilt-card { transition: transform 0.3s ease; transform-style: preserve-3d; }
+
+/* ===== Typing Animation ===== */
+.typing-text { border-right: 2px solid var(--primary); animation: blink 1s infinite; }
+@keyframes blink { 0%, 100% { border-color: transparent; } 50% { border-color: var(--primary); } }
+
+/* ===== Stagger Children ===== */
+.stagger-children > * { opacity: 0; transform: translateY(20px); transition: all 0.4s ease; }
+.stagger-children.visible > *:nth-child(1) { transition-delay: 0.1s; }
+.stagger-children.visible > *:nth-child(2) { transition-delay: 0.2s; }
+.stagger-children.visible > *:nth-child(3) { transition-delay: 0.3s; }
+.stagger-children.visible > *:nth-child(4) { transition-delay: 0.4s; }
+.stagger-children.visible > *:nth-child(5) { transition-delay: 0.5s; }
+.stagger-children.visible > *:nth-child(6) { transition-delay: 0.6s; }
+.stagger-children.visible > * { opacity: 1; transform: translateY(0); }

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Internships - ZIDIOConnect</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="page-loader" class="page-loader"><div class="loader-content"><div class="loader-logo">Z</div><div class="loader-bar"><div class="loader-progress"></div></div></div></div>
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html" class="nav-logo"><span class="logo-icon">Z</span><span class="logo-text">IDIO<span class="logo-highlight">Connect</span></span></a>
+      <div class="nav-menu" id="nav-menu">
+        <a href="../index.html" class="nav-link">Home</a>
+        <a href="jobs.html" class="nav-link">Jobs</a>
+        <a href="internships.html" class="nav-link active">Internships</a>
+        <a href="about.html" class="nav-link">About</a>
+      </div>
+      <div class="nav-actions">
+        <div class="nav-auth" id="nav-auth"><a href="login.html" class="btn btn-outline btn-sm">Login</a><a href="register.html" class="btn btn-primary btn-sm">Sign Up</a></div>
+        <div class="nav-user hidden" id="nav-user">
+          <div class="user-dropdown" id="user-dropdown"><div class="user-avatar" id="user-avatar"><i class="fas fa-user"></i></div><div class="dropdown-menu" id="dropdown-menu"><a href="dashboard.html" class="dropdown-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div>
+        </div>
+        <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+  <main style="padding-top:100px;min-height:100vh;background:var(--bg-secondary)">
+    <div class="container">
+      <div class="section-header animate-fade-up" style="margin-bottom:30px">
+        <h2 class="section-title">Explore <span class="gradient-text">Internships</span></h2>
+        <p class="section-subtitle">Kickstart your career with hands-on experience</p>
+      </div>
+      <div class="jobs-grid" id="internships-grid">
+        <div class="loading-skeleton"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+      </div>
+    </div>
+  </main>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const grid = document.getElementById('internships-grid');
+      try {
+        const res = await fetch(`${API.jobs.list}?type=internship&limit=20`);
+        const data = await res.json();
+        if (data.jobs && data.jobs.length > 0) {
+          grid.innerHTML = data.jobs.map(job => createJobCard(job)).join('');
+        } else {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-secondary)"><p>No internships available yet.</p></div>';
+        }
+      } catch (err) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-secondary)"><p>Unable to connect to server.</p></div>';
+      }
+    });
+  </script>
+</body>
+</html>
