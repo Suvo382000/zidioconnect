@@ -10,9 +10,25 @@ const DB_PATH = process.env.NETLIFY
 let db = null;
 
 async function initDatabase() {
-  const SQL = await initSqlJs({
-    locateFile: file => path.join(__dirname, '..', 'netlify', 'functions', file)
-  });
+  // Find the WASM file in possible locations
+  const possiblePaths = [
+    path.join(__dirname, 'sql-wasm.wasm'),
+    path.join(__dirname, '..', 'netlify', 'functions', 'sql-wasm.wasm'),
+    path.join(process.cwd(), 'netlify', 'functions', 'sql-wasm.wasm'),
+    path.join(__dirname, '..', 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm'),
+    path.join(process.cwd(), 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm'),
+  ];
+
+  let wasmBinary = null;
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      wasmBinary = fs.readFileSync(p);
+      console.log('Found WASM at:', p);
+      break;
+    }
+  }
+
+  const SQL = await initSqlJs(wasmBinary ? { wasmBinary } : {});
 
   // Load existing database or create new one
   if (fs.existsSync(DB_PATH)) {

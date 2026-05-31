@@ -5,7 +5,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  included_files = ["database/**", "netlify/functions/sql-wasm.wasm"]
+  included_files = ["database/**", "netlify/functions/sql-wasm.wasm", "node_modules/sql.js/dist/sql-wasm.wasm"]
 
 [[redirects]]
   from = "/api/*"
