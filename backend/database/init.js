@@ -3,27 +3,22 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
-const DB_PATH = process.env.NETLIFY
-  ? '/tmp/zidioconnect.db'
-  : path.join(__dirname, 'zidioconnect.db');
+const DB_PATH = path.join(__dirname, 'zidioconnect.db');
 
 let db = null;
 
 async function initDatabase() {
-  // Find the WASM file in possible locations
+  // Find the WASM file (works on Render, local, and most Node environments)
   const possiblePaths = [
-    path.join(__dirname, 'sql-wasm.wasm'),
-    path.join(__dirname, '..', 'netlify', 'functions', 'sql-wasm.wasm'),
-    path.join(process.cwd(), 'netlify', 'functions', 'sql-wasm.wasm'),
     path.join(__dirname, '..', 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm'),
     path.join(process.cwd(), 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm'),
+    path.join(__dirname, 'sql-wasm.wasm'),
   ];
 
   let wasmBinary = null;
   for (const p of possiblePaths) {
     if (fs.existsSync(p)) {
       wasmBinary = fs.readFileSync(p);
-      console.log('Found WASM at:', p);
       break;
     }
   }
